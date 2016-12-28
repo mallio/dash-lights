@@ -36,7 +36,7 @@ const hue = {
     })
   },*/
 
-  _ajax: axios.create({baseURL: `${apiConfig.hue.baseUrl}/${apiConfig.hue.username}`}),
+  _ajax: axios.create({baseURL: `http://${apiConfig.hue.bridge}/api/${apiConfig.hue.username}`}),
 
   api(method, url, data) {
     return this._ajax({method, url, data});

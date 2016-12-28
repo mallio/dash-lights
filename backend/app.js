@@ -1,20 +1,52 @@
-var DashButton = require('node-dash-button');
+/*jslint node:true*/
+'use strict';
+
+var dashButton = require('node-dash-button');
 var HueApi = require('node-hue-api').HueApi;
+var fs = require('fs');
 
-// TODO - detect automatically (nupnpSearch)
-var bridge = "10.0.0.8";
-var username = "z-O9t2G3TrmUWqwY3TMWpcdzjw-E35nYWPrMgucU";
-var buttons = [
-  "ac:63:be:70:d2:e6" /* Phillips 1 */
-];
+/**
+ * Configuration
+ */
+var config = {};
 
-var api = new HueApi(bridge, username); 
+function readConfig(type) {
+  var json = fs.readFileSync('../config/' + type + '.json');
+  config[type] = JSON.parse(json);
+}
 
-var dash = DashButton(buttons, null, null, 'udp');
-dash.on('detected', function() {
-  console.log('button clicked');
-  api.lightStatus(1, function(err, status){
-    console.log('Turning light ' + (status.state.on ? 'off' : 'on'));
-    api.setLightState(1, {'on': !status.state.on});
+function writeConfig(type) {
+  if (config[type]) {
+    fs.writeFileSync('../config/' + type + '.json', JSON.stringify(config[type], null, 4));
+  }
+}
+
+// TODO - detect bridge automatically (nupnpSearch)?
+readConfig('api');
+readConfig('buttons');
+
+
+/**
+ * Dash Button setup
+ */
+var buttonIds = Object.keys(config.buttons);
+
+var api = new HueApi(config.api.hue.bridge, config.api.hue.username);
+
+var dash = dashButton(buttonIds, null, null, 'udp');
+dash.on('detected', function(id) {
+  var button = config.buttons[id];
+
+  button.lights && button.lights.forEach(function(light) {
+    api.lightStatus(light, function(err, status) {
+      api.setLightState(light, {'on': !status.state.on});
+    });
   });
+
+  button.groups && button.groups.forEach(function(group) {
+    api.getGroup(group, function(err, status) {
+      api.setGroupState(group, {'on': !status.state.all_on});
+    });
+  });
+
 });

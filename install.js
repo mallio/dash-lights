@@ -17,7 +17,7 @@ if (!fs.existsSync('config/api.json')) {
     },
     hue: {
       username: "",
-      baseUrl: ""
+      bridge: ""
     }
   };
   fs.writeFileSync('config/api.json', JSON.stringify(defaultApi, null, 4));
