@@ -1,0 +1,11 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Controls my lights",
+  "main": "app.js",
+  "private": true,
+  "dependencies": {
+    "node-dash-button": "^0.6.1",
+    "node-hue-api": "^2.3.0"
+  }
+}

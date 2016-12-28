@@ -1,15 +1,9 @@
 {
   "name": "dash-lights",
   "version": "1.0.0",
-  "description": "Controls my lights",
-  "main": "app.js",
+  "description": "Front end and backend for controlling lights with dash buttons",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Mike O'Malley",
-  "license": "MIT",
-  "dependencies": {
-    "node-dash-button": "^0.6.1",
-    "node-hue-api": "^2.3.0"
+    "install": "node install.js"
   }
 }
