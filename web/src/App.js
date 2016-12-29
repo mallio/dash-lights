@@ -213,7 +213,7 @@ class CheckboxFieldset extends Component {
   }
 
   componentDidMount() {
-   if (this.props.options instanceof Promise) {
+    if (this.props.options instanceof Promise) {
       this.props.options.then(this.setOptions.bind(this));
     } else {
       this.setOptions(this.props.options);
@@ -234,8 +234,8 @@ class CheckboxFieldset extends Component {
   }
 
   render() {
-    function id(option) {
-      return option.name + option.value;
+    let id = (option)=>{
+      return this.props.name + option.value;
     }
     return (
       <fieldset>
@@ -270,6 +270,7 @@ class DashButtons extends Component {
       <div>
         <h2>Dash Buttons</h2>
         <MapList items={this.state.items} resource="dash-buttons" />
+        <Link to="/dash-buttons/new">Add Button</Link>
         <div key={this.props.params.id}>
           {this.props.children}
         </div>
@@ -331,6 +332,42 @@ class DashButton extends Component {
   }
 }
 
+class NewDashButton extends Component {
+
+  fields() {
+    return [
+      {name: 'id', label: 'Mac Address'},
+      {name: 'name', label: 'Name'},
+      {name: 'lights', label: 'Lights', type: 'check', options: this.options('lights')},
+      {name: 'groups', label: 'Groups', type: 'check', options: this.options('groups')}
+    ]
+  }
+
+  options(type) {
+    return new Promise((resolve)=>{
+      hue[type]().then(response => {
+        resolve(Object.keys(response.data).map(id => {
+          return {value: id, label: response.data[id].name};
+        }));
+      });
+    });
+  }
+
+  handleSubmit = (data)=>{
+    backend.newButton(data).then(()=>window.location.reload());
+  }
+
+  render() {
+    return (
+      <div>
+        <h3>New Dash Button</h3>
+        <Form fields={this.fields()} value={{}} onSubmit={this.handleSubmit} />
+      </div>
+    );
+  }
+}
+
+
 class Groups extends Component {
   render() {
     return (
@@ -376,6 +413,7 @@ class Routing extends Component {
       <Router history={browserHistory}>
         <Route path="/" component={App}>
           <Route path="dash-buttons" component={DashButtons}>
+            <Route path="new" component={NewDashButton} />
             <Route path=":id" component={DashButton} />
           </Route>
           <Route path="groups" component={Groups}>
