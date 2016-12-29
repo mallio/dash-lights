@@ -13,7 +13,8 @@ if (!fs.existsSync('config/api.json')) {
   console.log('Adding default api.json');
   var defaultApi = {
     backend: {
-      baseUrl: ""
+      server: "",
+      port: ""
     },
     hue: {
       username: "",

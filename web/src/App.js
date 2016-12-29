@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { Router, Route, Link, browserHistory } from 'react-router'
+import {Checkbox, CheckboxGroup} from 'react-checkbox-group';
+
 
 import axios from 'axios';
 import apiConfig from '../../config/api.json';
@@ -10,32 +12,25 @@ import './App.css';
  * stores the configuration
  */
 const backend = {
-  /*getConfig() {
-    return new Promise((resolve) => {
-      resolve(apiConfig);
-    });
-  }*/
+  _ajax: axios.create({baseURL: `http://${apiConfig.backend.server}:${apiConfig.backend.port}`}),
+
+  api(method, url, data) {
+    return this._ajax({method, url, data});
+  },
+
+  newButton(data) {
+    return this.api('post', '/buttons/new', data);
+  },
+
+  buttons(data) {
+    return this.api(data ? 'post' : 'get', '/buttons', data);
+  }
 }
 
 /**
  * Handles calls to the Hue API
  */
 const hue = {
-  /*_ajax: new Promise((resolve) => {
-    backend.getConfig().then((config)=> {
-      const baseURL = `${config.hue.baseUrl}/${config.hue.username}`;
-      resolve(axios.create({baseURL}));
-    });
-  }),
-
-  api(method, url, data) {
-    return new Promise((resolve) => {
-      this._ajax.then((ajax) => {
-        ajax({method, url, data}).then(resolve);
-      });
-    })
-  },*/
-
   _ajax: axios.create({baseURL: `http://${apiConfig.hue.bridge}/api/${apiConfig.hue.username}`}),
 
   api(method, url, data) {
@@ -74,22 +69,6 @@ class App extends Component {
   }
 }
 
-class DashButtons extends Component {
-  render() {
-    return (
-      <h2>Dash Buttons</h2>
-    )
-  }
-}
-
-class DashButton extends Component {
-  render() {
-    return (
-      <h3>Dash Button</h3>
-    );
-  }
-}
-
 class HueCollection extends Component {
   constructor(props) {
     super(props);
@@ -106,7 +85,7 @@ class HueCollection extends Component {
     return (
       <div>
         <h2>{this.props.title}</h2>
-        <HueList items={this.state.items} resource={this.props.resource} />
+        <MapList items={this.state.items} resource={this.props.resource} />
         <div key={this.props.parent.params.id}>
           {this.props.parent.children}
         </div>
@@ -115,7 +94,7 @@ class HueCollection extends Component {
   }
 }
 
-function HueList(props) {
+function MapList(props) {
   const items = Object.keys(props.items).map(id => {
     const item = props.items[id];
     const link = `/${props.resource}/${id}`;
@@ -149,12 +128,16 @@ class HueObject extends Component {
     });
   }
 
+  handleSubmit = (data)=>{
+    hue[this.props.resource](this.props.id, data).then(()=>window.location.reload());
+  }
+
   render() {
     return (
       <div>
         <h3>{this.props.title}</h3>
         {!this.props.fields ? "" : (
-          <Form key={this.state.item.name} id={this.props.id} resource={this.props.resource} fields={this.props.fields} value={this.state.item} />
+          <Form key={this.state.item.name} fields={this.props.fields} value={this.state.item} onSubmit={this.handleSubmit} />
         )}
         <pre>
           {JSON.stringify(this.state.item, null, 4)}
@@ -169,40 +152,182 @@ class Form extends Component {
     super(props);
     const state = {};
     props.fields.forEach((field)=>{
-      state[field.name] = "";
+      state[field.name] = this.fieldDefault(field);
     });
     this.state = state;
+  }
+
+  fieldDefault(field) {
+    return field.type === 'check' ? [] : "";
   }
 
   componentDidMount() {
     const state = {};
     this.props.fields.forEach((field)=>{
-      state[field.name] = this.props.value[field.name] || "";
+      state[field.name] = this.props.value[field.name] || this.fieldDefault(field);
     });
     this.setState(state);
   }
 
   handleChange = (event)=>{
-    this.setState({[event.target.name]: event.target.value});
+    this.setState({[event.target.id]: event.target.value});
   }
 
   handleSubmit = (event)=>{
     event.preventDefault();
-    hue[this.props.resource](this.props.id, this.state).then(()=>window.location.reload());
+    this.props.onSubmit(this.state);
+  }
+
+  renderField = (field)=>{
+    if (field.type === 'check') {
+      return (
+        <CheckboxFieldset key={field.name} name={field.name} label={field.label} options={field.options}
+            value={this.state[field.name]} onChange={this.handleChange} />
+      );
+    } else {
+      return (
+        <div key={field.name}>
+          <label htmlFor={field.name}>{field.label}</label>
+          <input type="text" id={field.name} value={this.state[field.name]}  onChange={this.handleChange} />
+        </div>
+      );
+    }
   }
 
   render() {
     return (
       <form onSubmit={this.handleSubmit}>
-        {this.props.fields.map(field =>
-          <div key={field.name}>
-            <label htmlFor={field.name}>{field.label}</label>
-            <input type="text" name={field.name} value={this.state[field.name]}  onChange={this.handleChange} />
-          </div>
-        )}
+        {this.props.fields.map(this.renderField)}
         <input type="submit" value="Save" />
       </form>
     )
+  }
+}
+
+class CheckboxFieldset extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      options: []
+    }
+  }
+
+  componentDidMount() {
+   if (this.props.options instanceof Promise) {
+      this.props.options.then(this.setOptions.bind(this));
+    } else {
+      this.setOptions(this.props.options);
+    }
+  }
+
+  setOptions(options) {
+    this.setState({options});
+  }
+
+  handleChange = (value)=> {
+    var event = {
+      target: {}
+    }
+    event.target.value = value;
+    event.target.id = this.props.name;
+    this.props.onChange(event);
+  }
+
+  render() {
+    function id(option) {
+      return option.name + option.value;
+    }
+    return (
+      <fieldset>
+        {this.props.label && <legend>{this.props.label}</legend>}
+        <CheckboxGroup name={this.props.name} value={this.props.value || []} onChange={this.handleChange}>
+          {this.state.options.map(option =>
+            <div key={option.value}>
+              <Checkbox value={option.value} id={id(option)} />
+              <label htmlFor={id(option)}>{option.label}</label>
+            </div>
+          )}
+        </CheckboxGroup>
+      </fieldset>
+    )
+  }
+}
+
+class DashButtons extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      items: []
+    }
+  }
+
+  componentDidMount() {
+    backend.buttons().then(res => this.setState({items: res.data}))
+  }
+
+  render() {
+    return (
+      <div>
+        <h2>Dash Buttons</h2>
+        <MapList items={this.state.items} resource="dash-buttons" />
+        <div key={this.props.params.id}>
+          {this.props.children}
+        </div>
+      </div>
+    );
+  }
+}
+
+class DashButton extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      item: {}
+    };
+  }
+
+  componentDidMount() {
+    const id = this.props.params.id;
+    backend.buttons().then(res => {
+      this.setState({item: res.data[id]})
+    });
+  }
+
+  fields() {
+    return [
+      {name: 'name', label: 'Name'},
+      {name: 'lights', label: 'Lights', type: 'check', options: this.options('lights')},
+      {name: 'groups', label: 'Groups', type: 'check', options: this.options('groups')}
+    ]
+  }
+
+  options(type) {
+    return new Promise((resolve)=>{
+      hue[type]().then(response => {
+        resolve(Object.keys(response.data).map(id => {
+          return {value: id, label: response.data[id].name};
+        }));
+      });
+    });
+  }
+
+  handleSubmit = (data)=>{
+    const id = this.props.params.id;
+    backend.buttons().then(res => {
+      const buttons = res.data;
+      buttons[id] = data;
+      backend.buttons(buttons);
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <h3>Dash Button</h3>
+        <Form key={this.state.item.name} fields={this.fields()} value={this.state.item} onSubmit={this.handleSubmit} />
+      </div>
+    );
   }
 }
 
