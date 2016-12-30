@@ -17,9 +17,11 @@ class HueCollection extends Component {
   render() {
     return (
       <div>
-        <h2>{this.props.title}</h2>
-        <MapList items={this.state.items} resource={this.props.resource} />
-        <div key={this.props.parent.params.id}>
+        <div className="sidebar">
+          <h2>{this.props.title}</h2>
+          <MapList items={this.state.items} resource={this.props.resource} selected={this.props.parent.params.id} />
+        </div>
+        <div className="main" key={this.props.parent.params.id}>
           {this.props.parent.children}
         </div>
       </div>

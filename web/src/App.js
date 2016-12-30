@@ -9,13 +9,23 @@ import {Lights, Light} from './sections/Lights';
 
 class App extends Component {
   render() {
+    let className = (path)=>{
+      let names = ["pure-menu-item"];
+      if (window.location.pathname.includes(path)) {
+        names.push('pure-menu-selected');
+      }
+      return names.join(' ');
+    }
+
     return (
       <div>
-        <ul>
-          <li><Link to="/dash-buttons">Dash Buttons</Link></li>
-          <li><Link to="/groups">Groups</Link></li>
-          <li><Link to="/lights">Lights</Link></li>
-        </ul>
+        <div className="head-menu pure-menu pure-menu-horizontal">
+          <ul className="pure-menu-list">
+            <li className={className('dash-buttons')}><Link className="pure-menu-link" to="/dash-buttons">Dash Buttons</Link></li>
+            <li className={className('groups')}><Link className="pure-menu-link" to="/groups">Groups</Link></li>
+            <li className={className('lights')}><Link className="pure-menu-link" to="/lights">Lights</Link></li>
+          </ul>
+        </div>
         {this.props.children}
       </div>
     );

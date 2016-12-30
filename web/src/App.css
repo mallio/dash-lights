@@ -1,0 +1,43 @@
+.head-menu {
+  font-size: 1.3em;
+  background-color: #ddd;
+}
+
+.head-menu .pure-menu-selected .pure-menu-link {
+  background-color: #fff;
+}
+
+.sidebar {
+  position: absolute;
+  width: 180px;
+  padding: 10px;
+}
+
+.sidebar h2 {
+  font-size: 1.2em;
+  margin-top: 0;
+  display: none;
+}
+
+.main {
+  position: absolute;
+  left: 210px;
+  padding: 10px;
+}
+
+.main h3 {
+  font-size: 1.1em;
+  margin-top: 0;
+}
+
+
+.pure-form-aligned .pure-controls {
+  margin-left: 7em;
+}
+
+.pure-form-aligned .pure-control-group label {
+  width: 6em;
+}
+
+
+

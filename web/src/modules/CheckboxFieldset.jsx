@@ -38,11 +38,11 @@ class CheckboxFieldset extends Component {
     return (
       <fieldset>
         {this.props.label && <legend>{this.props.label}</legend>}
-        <CheckboxGroup name={this.props.name} value={this.props.value || []} onChange={this.handleChange}>
+        <CheckboxGroup className="pure-controls" name={this.props.name} value={this.props.value || []} onChange={this.handleChange}>
           {this.state.options.map(option =>
-            <div key={option.value}>
+            <div className="pure-checkbox" key={option.value}>
               <Checkbox value={option.value} id={id(option)} />
-              <label htmlFor={id(option)}>{option.label}</label>
+              <label htmlFor={id(option)}> {option.label}</label>
             </div>
           )}
         </CheckboxGroup>

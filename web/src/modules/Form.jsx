@@ -40,7 +40,7 @@ class Form extends Component {
       );
     } else {
       return (
-        <div key={field.name}>
+        <div className="pure-control-group" key={field.name}>
           <label htmlFor={field.name}>{field.label}</label>
           <input type="text" id={field.name} value={this.state[field.name]}  onChange={this.handleChange} />
         </div>
@@ -50,9 +50,11 @@ class Form extends Component {
 
   render() {
     return (
-      <form onSubmit={this.handleSubmit}>
+      <form className="pure-form pure-form-aligned" onSubmit={this.handleSubmit}>
         {this.props.fields.map(this.renderField)}
-        <input type="submit" value="Save" />
+        <div className="pure-controls">
+          <input className="pure-button pure-button-primary" type="submit" value="Save" />
+        </div>
       </form>
     )
   }

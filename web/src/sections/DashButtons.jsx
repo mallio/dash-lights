@@ -20,10 +20,12 @@ class DashButtons extends Component {
   render() {
     return (
       <div>
-        <h2>Dash Buttons</h2>
-        <MapList items={this.state.items} resource="dash-buttons" />
-        <Link to="/dash-buttons/new">Add Button</Link>
-        <div key={this.props.params.id}>
+        <div className="sidebar">
+          <h2>Dash Buttons</h2>
+          <MapList items={this.state.items} resource="dash-buttons" selected={this.props.params.id} />
+          <Link className="pure-button pure-button-primary add-button" to="/dash-buttons/new">New</Link>
+        </div>
+        <div className="main" key={this.props.params.id}>
           {this.props.children}
         </div>
       </div>
