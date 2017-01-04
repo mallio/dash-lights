@@ -1,4 +1,14 @@
+#root {
+  margin-top: 50px;
+  margin-left: 150px;
+}
+
 .head-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: auto;
+
   font-size: 1.3em;
   background-color: #ddd;
 }
@@ -8,10 +18,14 @@
 }
 
 .sidebar {
-  position: absolute;
-  width: 180px;
-  padding: 10px;
+  position: fixed;
+  width: 150px;
+  left: 150px;
+  margin-left: -150px;
+  box-sizing: border-box;
+  overflow: auto;
 }
+
 
 .sidebar h2 {
   font-size: 1.2em;
@@ -19,9 +33,11 @@
   display: none;
 }
 
+.pure-menu-link {
+  white-space: normal;
+}
+
 .main {
-  position: absolute;
-  left: 210px;
   padding: 10px;
 }
 
@@ -39,5 +55,12 @@
   width: 6em;
 }
 
-
+@media only screen and (max-width: 480px) {
+  .pure-form-aligned .pure-controls {
+    margin-left: inherit;
+  }
+  .pure-checkbox label {
+    display: inline;
+  }
+}
 
