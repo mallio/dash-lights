@@ -50,7 +50,7 @@ function handleButtonClick(id) {
 
   button.groups && button.groups.forEach(function(group) {
     api.getGroup(group, function(err, status) {
-      api.setGroupState(group, {'on': !status.state.all_on});
+      api.setGroupLightState(group, {'on': !status.lastAction.on});
     });
   });
 }
