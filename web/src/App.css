@@ -64,3 +64,45 @@
   }
 }
 
+
+.find-button {
+  margin: -1em 0 1em;
+}
+
+@keyframes radar {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.searching {
+    position: relative;
+    opacity: .8;
+    color: transparent !important;
+    text-shadow: none !important;
+}
+
+.searching:before {
+    content: '';
+
+    display: inline-block;
+
+    position: absolute;
+    background: transparent;
+    border: 1px solid #fff;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+
+    box-sizing: border-box;
+
+    top: 50%;
+    left: 50%;
+    margin-top: -10px;
+    margin-left: -10px;
+
+    width: 20px;
+    height: 20px;
+
+    animation: radar 1s ease-in-out infinite;
+}

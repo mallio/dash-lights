@@ -18,6 +18,11 @@ const backend = {
 
   buttons(data) {
     return this.api(data ? 'post' : 'get', '/buttons', data);
+  },
+
+  findButton() {
+    //return this.api('get', '/findbutton');
+    return this.api('get', '/findbutton');
   }
 }
 

@@ -65,24 +65,23 @@ initButtons(buttonIds);
 var dispatcher = new HttpDispatcher();
 var server = http.createServer(function(req, res) {
 
-    // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Request-Method', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST');
-    res.setHeader('Access-Control-Allow-Headers', 'authorization, content-type');
-    if ( req.method === 'OPTIONS' ) {
-        res.writeHead(200);
-        res.end();
-        return;
-    }
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Request-Method', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST');
+  res.setHeader('Access-Control-Allow-Headers', 'authorization, content-type');
+  if ( req.method === 'OPTIONS' ) {
+    res.writeHead(200);
+    res.end();
+    return;
+  }
 
-  res.writeHead(200); //TODO move this...
   dispatcher.dispatch(req, res);
 });
 
 // Get buttons config
 dispatcher.onGet('/buttons', function(req, res) {
-  res.end(JSON.stringify(config.buttons));
+  finish(res, JSON.stringify(config.buttons));
 });
 
 // Add new button (needed because there doesn't appear to be a way to stop the
@@ -96,7 +95,7 @@ dispatcher.onPost('/buttons/new', function(req, res) {
 
   initButtons([id]);
 
-  res.end();
+  finish(res);
 });
 
 // Save button config (for changes to buttons, no need to reinitialize because
@@ -107,8 +106,41 @@ dispatcher.onPost('/buttons', function(req, res) {
   config.buttons = buttons;
   writeConfig('buttons');
 
-  res.end();
+  finish(res);
 });
 
+
+dispatcher.onGet('/findbutton', function(req, res) {
+  var spawn = require('child_process').spawn;
+  var fb = spawn('./node_modules/node-dash-button/bin/findbutton');
+  var mac = "";
+
+  var timeout = setTimeout(function(){
+    fb.kill();
+  }, 10000);
+
+  fb.stdout.on('data', function(data) {
+    var match = data.toString().match(/((?:(?:[0-9a-f]{2}):){5}(?:[0-9a-f]{2})).*Amazon/);
+    if (match) {
+      mac = match[1];
+      fb.kill();
+    }
+  });
+
+
+  fb.on('close', function() {
+    clearTimeout(timeout);
+    if (mac) {
+      finish(res, mac);
+    } else {
+      finish(res, "No dash button found", 404);
+    }
+  });
+});
+
+function finish(res, data, status) {
+  res.writeHead(status || 200);
+  res.end(data);
+}
 
 server.listen(config.api.backend.port);

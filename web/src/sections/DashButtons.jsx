@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router';
+import update from 'immutability-helper';
 import Form from '../modules/Form';
 import MapList from '../modules/MapList';
 import backend from '../modules/backend';
@@ -87,6 +88,14 @@ class DashButton extends Component {
 }
 
 class NewDashButton extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      item: {},
+      searching: false
+    };
+  }
 
   fields() {
     return [
@@ -111,11 +120,23 @@ class NewDashButton extends Component {
     backend.newButton(data).then(()=>window.location.reload());
   }
 
+  handleFindButton = ()=>{
+    this.setState(update(this.state, {searching: {$set: true}}));
+    backend.findButton().then((res)=>{
+      this.setState(update(this.state, {item: {id: {$set: res.data}}, searching: {$set: false}}));
+    }).catch(()=>{
+      alert('No button found!');
+      this.setState(update(this.state, {searching: {$set: false}}));
+    });
+  }
+
   render() {
     return (
       <div>
         <h3>New Dash Button</h3>
-        <Form fields={this.fields()} value={{}} onSubmit={this.handleSubmit} />
+        <button className={"find-button pure-button pure-button-primary" + (this.state.searching ? ' searching' : '')}
+            onClick={this.handleFindButton}>Find Button</button>
+        <Form key={this.state.item.id} fields={this.fields()} value={this.state.item} onSubmit={this.handleSubmit} />
       </div>
     );
   }
